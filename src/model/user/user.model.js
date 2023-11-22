@@ -4,13 +4,27 @@ const { hashPassword } = require("../../helpers/bcrypt.helper")
 const pgp = require('pg-promise')()
 const connectionURL = 'postgres://postgres:admin@localhost:5432/ITSM';
 const db = pgp(connectionURL);
+
+
+const getPasswordFromDb=async(email)=>{
+  try {
+    const query = `
+        SELECT user_password FROM user_credentials WHERE user_email = $1
+    `;
+    const result = await db.oneOrNone(query, [email]);
+    return result ? result.user_password : null; // Returning password if found, otherwise null
+} catch (error) {
+    throw new Error(`Error retrieving password: ${error.message}`);
+}
+
+}
 const getUserByEmail=async(email)=>{
     return new Promise(async(resolve,reject)=>{
     try{
 
 
 
-        const result = await db.any('SELECT * FROM user_data where email = $1',[email]).then(data=>resolve(data))
+        const result = await db.any('SELECT * FROM users where user_email = $1',[email]).then(data=>resolve(data))
       resolve(result)
 
     }
@@ -22,37 +36,38 @@ const getUserByEmail=async(email)=>{
     })
 }
 
-const insertUserintoDB = async (user_data) => {
-    try {
-//       // Extract values from the user_data JSON
-      var { fname, lname,email, password,phone } = user_data;
-    password =  await hashPassword(password)
-    console.log("Insert statements")
+// Assuming you have a database connection named 'db'
 
- 
-      const query = {
-        text: 'INSERT INTO user_data (first_name, last_name, phone, email,created_by,role_name) VALUES ($1, $2, $3, $4,$5,$6) RETURNING *',
-        values: [fname, lname, phone, email,"Vignesh Chakkaravarthi","admin"],
-      }
-       
-//       // Assuming "db" is your database connection object
-     
-await db.oneOrNone(query.text,query1.values).then(data=>console.log("The data inserted is ",data))
-    }
-    catch(error)
-    {
-        console.log("The error occured is",error)
-    }
-  };
+const insertUserIntoDB = async (user_data) => {
+    try {
   
-  const insertCredentials=async(user_id, email, password)=>
+        const { user_email, user_fname, user_lname, user_phone_no, user_status, user_isadmin } = user_data;
+      
+        const query = `
+            INSERT INTO users (user_email, user_fname, user_lname, user_phone_no, user_status, user_isadmin)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING user_id`;
+        
+        const values = [user_email, user_fname, user_lname, user_phone_no, user_status, user_isadmin];
+
+        const result = await db.one(query, values);
+        
+        return result.user_id;
+    } catch (error) {
+        throw new Error(`Error inserting user: ${error.message}`);
+    }
+};
+
+
+  
+  const insertCredentials=async( email, password)=>
   {
 
     return new Promise(async(resolve,reject)=>{
       password = await hashPassword(password)
       const query = {
-        text: 'INSERT INTO user_credentials (user_id,user_email,password ) VALUES ($1, $2,$3)',
-        values: [user_id,email,password]
+        text: 'INSERT INTO user_credentials (user_email,user_password ) VALUES ($1, $2)',
+        values: [email,password]
         
       };
       try{
@@ -80,4 +95,4 @@ await db.oneOrNone(query.text,query1.values).then(data=>console.log("The data in
     
 
   }
-module.exports = {getUserByEmail,insertUserintoDB,insertCredentials}
+module.exports = {getUserByEmail,insertUserIntoDB,insertCredentials,getPasswordFromDb}

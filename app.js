@@ -26,8 +26,8 @@ app.listen(port,()=>{
 
 
 const userRouter = require("./src/routers/user.router")
-app.use("/v1/user",userRouter)
-app.use("/v1/tickets",ticketRouter)
+app.use("/user",userRouter)
+app.use("/tickets",ticketRouter)
 
 const handleError = require("./src/utils/errorHandler")
 app.use("*",(req,res,next)=>{
