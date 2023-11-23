@@ -1,9 +1,9 @@
 const { hashPassword } = require("../../helpers/bcrypt.helper")
 // const {pgp,db} =require("../../helpers/dbConnection")
 var pg = require('pg');
-const pgp = require('pg-promise')()
-const connectionURL = 'postgres://postgres:admin@localhost:5432/ITSM';
-const db = pgp(connectionURL);
+// const pgp = require('pg-promise')()
+// const connectionURL = 'postgres://postgres:admin@localhost:5432/ITSM';
+// const db = pgp(connectionURL);
 var conString = "postgres://bbufkjqf:11Cu2oK2aX7PthzXHBWPlf_BIlZX-ZZr@berry.db.elephantsql.com/bbufkjqf" //Can be found in the Details page
 var client = new pg.Client(conString);
 flag= false

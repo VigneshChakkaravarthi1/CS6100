@@ -9,9 +9,6 @@ const {getPasswordFromDb} = require('../model/user/user.model')
 
 
 
-// Elephant SQL
-
-
 router.post("/login",async(req,res)=>{
     console.log("In router.post")
     const {email,password}= req.body
