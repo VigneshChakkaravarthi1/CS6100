@@ -1,5 +1,5 @@
 
-const pgp = require('pg-promise')
+
 const { comparePassword } =require( '../helpers/bcrypt.helper')
 const express = require("express")
 const router = express.Router()
