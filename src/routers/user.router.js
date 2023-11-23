@@ -26,7 +26,7 @@ router.post("/login",async(req,res)=>{
         res.json({status:"success",user_data:user_data})
     }
     else{
-        res.json({status:"failure",message:"Invalid user id or password"})
+        res.json({status:"either incorrect password",message:"Invalid user id or password"})
     }
 
 })

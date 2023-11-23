@@ -9,10 +9,18 @@ router.post("/create-ticket",async(request,response)=>{
     
 
     const {user_id,subject,description,files}=request.body
+    try{
+        if(user_id){
     
-    if(user_id){
-const ticket_id = await insertTicket(user_id,subject, description)
+            const ticket = await insertTicket(user_id,subject, description)
+
+                response.json({status:"success",ticket:ticket})
+            
+    }}
+    catch(error){
+        response.json({status:"failure",message:error})
     }
+    
     
 })
 
