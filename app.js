@@ -3,8 +3,10 @@ const app = express()
 const bodyParser = require("body-parser")
 const cors = require("cors")
 const helmet = require("helmet")
-const port = process.env.PORT || 3001
+
 const morgan = require("morgan")
+require("dotenv").config()
+const port = process.env.PORT ||3001
 
 
 
