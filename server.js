@@ -1,31 +1,28 @@
-const express = require("express") 
-const multer=require('multer');
-const path =require( 'path')
-const fs=require('fs');
+const axios = require('axios');
 
-const app = express();
-const port = 3000;
+const databricksToken = 'YOUR_DATABRICKS_ACCESS_TOKEN';
+const notebookPath = '/path/to/your/notebook'; // Specify your notebook path
 
-const storage = multer.diskStorage({
-destination: function (req, file, cb) {
-const uploadDir = 'C:\\Users\\Windows\\Desktop\\Selenium Notes';
-if (!fs.existsSync(uploadDir)) {
-fs.mkdirSync(uploadDir);
+async function callDatabricksNotebook() {
+  try {
+    const response = await axios.post(`https://<YOUR-DATABRICKS-WORKSPACE-URL>/api/2.0/workspace/export`, {
+      path: notebookPath,
+      format: 'SOURCE'
+    }, {
+      headers: {
+        'Authorization': `Bearer ${databricksToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const notebookContent = response.data.content; // Extract notebook content
+    console.log('Notebook Content:', notebookContent);
+
+    // Assuming you got the content of the notebook, you can make other API requests or handle the content accordingly
+
+  } catch (error) {
+    console.error('Error executing notebook:', error.response ? error.response.data.error_message : error.message);
+  }
 }
-cb(null, uploadDir);
-},
-filename: function (req, file, cb) {
-const ext = path.extname(file.originalname);
-cb(null, Date.now() + ext);
-},
-});
 
-const upload = multer({ storage: storage });
-
-app.post('/upload', upload.single('image'), (req, res) => {
-res.send('Image uploaded successfully!');
-});
-
-app.listen(port, () => {
-console.log(`Server is running on http://localhost:${port}`);
-});
+callDatabricksNotebook();

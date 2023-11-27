@@ -2,9 +2,35 @@ const express = require("express")
 const router = express.Router()
 const {attachmentSchema}=require("./../schemas/attachment.schema")
 const mongoose = require("mongoose")
-const { insertTicket ,getTickets,insertFileNameMongo} =require( "../model/ticket/ticket.model")
+const { get_ticket_by_ticket_id,insertTicket ,getTickets,insertFileNameMongo,insertComments ,close_ticket} =require( "../model/ticket/ticket.model")
 const {upload,bucket,fs,path} = require("../model/ticket/insertImgintoGCP")
 router.all("/",(req,res,next)=>{})
+
+
+
+
+
+
+router.post("/update-comments",async(request,respnse)=>{
+try{
+
+    mongoose.connect('mongodb://localhost:27017/ITSM', {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      });
+    const {ticket_id,comment,admin_id}=request.body 
+    const result = await insertComments(ticket_id,comment)
+    if(result)
+    {
+        respnse.json({status:"success",message:"Comments added successfully"})
+    }
+
+}
+catch(error)
+{
+    respnse.json({status:"failure",message:error})
+}
+})
 router.post("/create-ticket",upload.single('file'),async(request,response)=>{
     const {user_id,subject,description}=request.body
     try{
@@ -19,9 +45,6 @@ router.post("/create-ticket",upload.single('file'),async(request,response)=>{
   useUnifiedTopology: true,
 });
 
-        const existingTicket = await Ticket.findOne({ ticket_id });
-             
-            const Attachment = mongoose.model('tickets', attachmentSchema)
             const file = request.file;
             const fileName = ticket_id+String(Date.now());
             
@@ -72,6 +95,50 @@ router.get("/get-tickets",async(request,response)=>{
     }
 })
 
+
+router.post("/close-ticket",async(request,response)=>{
+
+    try
+    {
+        const {ticket_id}=( request.body)
+        console.log("Ticket id passed",ticket_id)
+        const result = await close_ticket(ticket_id)
+        if(result)
+        {
+            response.json({status:"success",message:"ticket closed successful"})
+        }
+    }
+    catch(error)
+    {response.json({status:"failure",message:error})
+
+    }
+    
+    
+})
+
+router.get("/:ticket_id",async (request,response)=>{
+    try {
+        mongoose.connect('mongodb://localhost:27017/ITSM', {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+          });
+
+        ticket_id = request.params.ticket_id
+        console.log("Ticket id is",ticket_id)
+        const result =await get_ticket_by_ticket_id(ticket_id)
+        response.json({status:"success",message:result})
+
+    } catch ({error}) {
+        response.json({status:"failure",message:error.message})
+    }
+})
+
+
+router.get("/change-team",async(request,response)=>{
+    const {ticket_id,team_id}= request.body.team_id
+    const result = await change_team_owner(ticket_id,team_id)
+    
+})
 
 
 module.exports = router

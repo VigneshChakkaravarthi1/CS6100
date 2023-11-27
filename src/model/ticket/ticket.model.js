@@ -1,5 +1,5 @@
 var pg = require('pg');
-const {Ticket} = require("./../../schemas/attachment.schema")
+const {Ticket,ticketSchema} = require("./../../schemas/attachment.schema")
 // const pgp = require('pg-promise')()
 // const connectionURL = 'postgres://postgres:admin@localhost:5432/ITSM';
 // const db = pgp(connectionURL);
@@ -42,8 +42,12 @@ const insertTicket=async(subject,description,user_id)=>{
     }
   }
 
-  const insertFileNameMongo=async(fineName,ticket_id)=>{
+  const insertFileNameMongo=async(file_name,ticket_id)=>{
+
+
     const existingTicket = await Ticket.findOne({ ticket_id });
+    console.log(existingTicket)
+   
     if (existingTicket) {
         // If the ticket_id exists, update the file_paths array
         existingTicket.file_paths.push(file_name);
@@ -62,5 +66,66 @@ const insertTicket=async(subject,description,user_id)=>{
 
     
   }
+  }
 
-  module.exports={insertTicket,getTickets,insertFileNameMongo}
+
+  const insertComments =async(ticket_id,comment)=>{
+    try {
+      
+      const foundTicket = await Ticket.findOne({ ticket_id });
+
+      if (foundTicket) {
+        foundTicket.comments.push({
+          text: comment,
+          created_at: new Date() // Set the 'created_at' field to the current date/time
+        });
+  
+        const result = await foundTicket.save();
+       return result
+
+
+    }
+    else {
+      console.log('Ticket not found');
+      return null
+      // Handle the case where the ticket is not found
+    }}
+    catch(error)
+    {
+      console.log("Error has occure",error)
+    }
+
+  }
+
+  const close_ticket =async(ticket_id)=>{
+    
+    try{
+      const query1 = "UPDATE tickets SET ticket_status = 3 where ticket_id =$1"
+   
+    const result = await client.query(query1,[ticket_id])
+    console.log('Rows affected:', result.rowCount);
+    return true
+
+    }
+    catch(error)
+    {
+      throw new Error(error.message)
+    }
+    
+    
+
+
+  }
+  const get_ticket_by_ticket_id =async(ticket_id)=>
+
+  {
+    const query = 'select * from tickets inner join teams on ticket_team = team_id where ticket_id=$1'
+    const values = [ticket_id]
+    const ticket =await client.query(query,values)
+    const comments= await Ticket.findOne({ticket_id})
+    
+    return [ticket.rows,comments]
+
+
+  }
+  module.exports={get_ticket_by_ticket_id,insertTicket,getTickets,insertFileNameMongo,insertComments,close_ticket}

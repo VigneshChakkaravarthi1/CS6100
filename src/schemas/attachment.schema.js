@@ -8,7 +8,8 @@ const ticketSchema = new mongoose.Schema({
       text: String
     }]
   });
+  ticketSchema.index({ ticket_id: 1 });
 
 const Ticket = mongoose.model('ticket', ticketSchema);
 
-module.exports = Ticket;
+module.exports = {Ticket,ticketSchema};
